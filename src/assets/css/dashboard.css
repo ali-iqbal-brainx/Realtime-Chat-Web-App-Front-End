@@ -1,0 +1,51 @@
+.dashboard {
+    padding-top: 100px;
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+    min-height: 100vh;
+    background: whitesmoke;
+    font-family: 'Roboto', sans-serif;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #aa9f9fa8;
+}
+
+li {
+    float: left;
+    border-right: 1px solid #fff;
+}
+
+li:last-child {
+    border-right: none;
+}
+
+
+li p {
+    display: block;
+    color: #8F8BE8;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li p:hover:not(.active) {
+    background-color: #8F8BE8;
+    color: white;
+    cursor: pointer;
+}
+
+.active {
+    background-color: #8F8BE8;
+    color: white;
+    cursor: pointer;
+}
+
+.right {
+    float: right;
+}

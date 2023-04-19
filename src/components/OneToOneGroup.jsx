@@ -1,22 +1,25 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import socketIOClient from "socket.io-client";
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import "../assets/css/chat.css";
-import { postMessagePublic, getPublicChat } from '../apis/public';
+import { getOneToOneChat } from '../apis/oneToOne';
 import { seeMessage } from '../apis/chats';
+import { postMessageOneToOne } from '../apis/oneToOne';
 
 const ENDPOINT = "http://localhost:4000";
 
-const Chat = () => {
+const OneToOneGroup = () => {
 
     const navigate = useNavigate();
+    const location = useLocation();
     const [msg, setMsg] = useState("");
+    const [members, setMembers] = useState([]);
     const [name, setName] = useState("");
-    const [chatCode, setChatCode] = useState("");
+    const [groupId, setGroupId] = useState("");
     const [messages, setMessages] = useState([]);
-    const [roomId, setRoomId] = useState("");
     const [socket, setSocket] = useState(null);
+
 
     const msgEvent = (e) => {
         if (e.target.value.slice(-1) !== '\n') {
@@ -25,21 +28,22 @@ const Chat = () => {
     }
 
     const sendMessage = (e) => {
+
         if (e.key === "Enter" && e.target.value !== '') {
 
             // Append 
             const helper = async () => {
-                return await postMessagePublic(msg);
+                return await postMessageOneToOne(msg, groupId);
             }
 
             helper()
-                .then(result => {
+                .then(res => {
 
-                    setMessages((prev) => [...prev, result]);
+                    setMessages((prev) => [...prev, res.data.chat]);
                     //send message to socket.io on server
-                    socket.emit(`send_message`, [result, roomId]);
+                    socket.emit(`send_one_to_one_message`, [res.data.chat, groupId]);
                     //send msg to all chats screen
-                    socket.emit(`msg_counter`, [result, roomId, "PUBLIC"]);
+                    socket.emit(`msg_counter`, [res.data.chat, groupId, "ONE-TO-ONE"]);
                     setMsg("");
 
                 })
@@ -54,7 +58,7 @@ const Chat = () => {
                         alert(error);
                     } else {
                         alert(error);
-                        navigate("/");
+                        navigate("/dash-board");
                     }
 
                 });
@@ -63,15 +67,17 @@ const Chat = () => {
 
     //recieve messages from socekt
     useEffect(() => {
-        if (socket) {
-            socket.on("recieve_message", (data) => {
 
-                if (data[0].userDetails._id !== localStorage.getItem("userId") && data[1] === roomId) {
+        if (socket) {
+
+            socket.on("recieve_one_to_one_message", (data) => {
+
+                if (data[0].userDetails._id !== localStorage.getItem("userId") && data[1] === groupId) {
                     console.log("message recieved  useEffect:", data);
 
                     //update backend
                     const helper = async () => {
-                        return await seeMessage(data[1], data[0]._id, "PUBLIC");
+                        return await seeMessage(data[1], data[0]._id, "ONE_TO_ONE");
                     }
 
                     helper()
@@ -97,39 +103,43 @@ const Chat = () => {
 
             });
         }
+
     }, [socket]);
 
+
     useLayoutEffect(() => {
+
         if (!localStorage.getItem("access_token")) {
             navigate("/");
         } else {
 
             const newSocket = socketIOClient(ENDPOINT);
+
             //call api
             const helper = async () => {
-                return await getPublicChat(true)
+                return await getOneToOneChat(location.state.one_to_one_chat._id, true)
             }
 
             helper()
-                .then(result => {
+                .then(res => {
+
                     setMsg("");
-                    setChatCode(result[0].chatCode);
-                    setName(result[0].name);
-                    if (result[0].messages?.length === 1) {
-                        if ('_id' in result[0].messages[0]) {
-                            console.log("in")
-                            setMessages(result[0].messages);
+                    setGroupId(res.data.oneToOneChat._id);
+                    localStorage.getItem("userId") === res.data.oneToOneChat.ids[0] ? setName(res.data.oneToOneChat.names[1].name) : setName(res.data.oneToOneChat.names[0].name);
+                    setMembers(res.data.oneToOneChat.ids);
+                    if (res.data.oneToOneChat.messages?.length === 1) {
+                        if ('_id' in res.data.oneToOneChat.messages[0]) {
+                            setMessages(res.data.oneToOneChat.messages);
                         } else {
                             setMessages([]);
                         }
                     } else {
-                        setMessages(result[0].messages);
+                        setMessages(res.data.oneToOneChat.messages);
                     }
-                    setRoomId(result[0]._id);
                     setSocket(newSocket);
-
                     //join room socket msg to all users in socket
-                    newSocket.emit("join_room", result[0]._id);
+                    newSocket.emit("join_room", res.data.oneToOneChat._id);
+
                 })
                 .catch(error => {
 
@@ -147,17 +157,18 @@ const Chat = () => {
 
                 });
 
+            // CLEAN UP THE EFFECT
             return () => {
-                console.log("off");
+
                 if (newSocket) {
                     console.log("off");
-                    newSocket.off('recieve_message');
+                    newSocket.off('recieve_one_to_one_message');
                     newSocket.disconnect();
                 }
 
             };
-        }
 
+        }
     }, []);
 
     return (
@@ -165,7 +176,7 @@ const Chat = () => {
             <div className='chat_div'>
                 <section className="chat__section">
                     <div className="brand">
-                        <h1>Chat Group</h1>
+                        <h1>{name}</h1>
                     </div>
                     <ScrollToBottom className='message__area'>
                         {messages.map((message) => {
@@ -192,7 +203,8 @@ const Chat = () => {
                             rows="1"
                             placeholder="Write a message..."
                             onChange={msgEvent}
-                            onKeyUp={sendMessage} />
+                            onKeyUp={sendMessage}
+                        />
                     </div>
                 </section>
             </div>
@@ -200,4 +212,4 @@ const Chat = () => {
     );
 }
 
-export default Chat;
+export default OneToOneGroup;

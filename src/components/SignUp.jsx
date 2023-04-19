@@ -1,11 +1,17 @@
-import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import socketIOClient from "socket.io-client";
+import { signUp } from "../apis/user";
+
+const ENDPOINT = "http://localhost:4000";
 
 const SignUp = () => {
+
+    const navigate = useNavigate();
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [socket, setSocket] = useState(null);
 
     const nameEvent = (e) => {
         setName(e.target.value);
@@ -25,33 +31,52 @@ const SignUp = () => {
         } else if (password !== confirmPassword) {
             alert("Passowrd fields mismatch");
         } else {
-            const profileObj = { name, password };
-            console.log("Profile Object :", profileObj);
-            // axios({
-            //     method: 'POST',
-            //     url: 'https://locahost:4000/sign-up', profileObj,
-            // }).then(res => {
 
-            //     if (res.status === 200) {
-            //         <Navigate to="/login" />
-            //     }
+            //update backend
+            const helper = async () => {
+                return await signUp(name, password);
+            }
 
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
+            helper()
+                .then(res => {
 
-            // }).catch(e => {
-            //     console.log("Error occured :", e);
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
-            // })
+                    //send msg to all chats screen to add this new user
+                    socket.emit(`add_new_user`, true);
+                    navigate("/");
+
+                })
+                .catch(error => {
+
+                    if (error === 406) {
+                        alert(error);
+                    }
+
+                });
         }
 
     }
+
+    useEffect(() => {
+
+        const newSocket = socketIOClient(ENDPOINT);
+        setSocket(newSocket);
+        //join room socket msg to all users in socket
+        newSocket.emit("join_room", "NEW_USER");
+
+        // CLEAN UP THE EFFECT
+        return () => {
+            console.log("off");
+            if (newSocket) {
+                console.log("off");
+                newSocket.disconnect();
+            }
+
+        };
+    }, []);
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
                     <br />
                     <h1> Sign Up</h1>
@@ -65,7 +90,10 @@ const SignUp = () => {
                             value={name}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <input
                             type="password"
                             name="password"
@@ -74,7 +102,10 @@ const SignUp = () => {
                             value={password}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <input
                             type="password"
                             name="confirmPassword"
@@ -83,14 +114,21 @@ const SignUp = () => {
                             value={confirmPassword}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <button
                             className="registerBtn"
                             type="submit"
-                            onClick={(e) => signUpUser(e)}>
+                            onClick={(e) => signUpUser(e)}
+                        >
                             Register
                         </button>
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                     </form>
 
                     <br />

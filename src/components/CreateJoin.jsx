@@ -1,23 +1,58 @@
-import React, { useState } from 'react';
-import { Link, Navigate } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const CreateJoin = () => {
 
+    const navigate = useNavigate();
+
+    const createPrivateGroup = () => {
+        localStorage.getItem("access_token") ?
+            navigate("/create-group") :
+            navigate("/");
+    }
+
+    const joinPrivateGroup = () => {
+        localStorage.getItem("access_token") ?
+            navigate("/verification") :
+            navigate("/");
+    }
+
+    useEffect(() => {
+        if (!localStorage.getItem("access_token")) {
+            navigate("/");
+        }
+
+    }, []);
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
+
                     <br />
                     <h1>Create or Join a Chat</h1>
-                    <select name="Settings" id="settins">
-                        <option value="profile">Profile</option>
-                        <option value="log out">Log Out</option>
-                    </select>
                     <br />
-                    <button>back</button>
+
+                    <button
+                        className="createBtn"
+                        type="submit"
+                        onClick={createPrivateGroup}
+                    >
+                        Create
+                    </button>
+
                     <br />
-                    <button>Create</button>
-                    <button>Join</button>
+                    <br />
+
+                    <button
+                        className="joinBtn"
+                        type="submit"
+                        onClick={joinPrivateGroup}
+                    >
+                        Join
+                    </button>
+
+                    <br />
                     <br />
                 </div>
             </div>

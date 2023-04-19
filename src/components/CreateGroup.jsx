@@ -1,8 +1,10 @@
-import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { createPrivateGroup } from "../apis/private";
 
 const CreateGroup = () => {
+
+    const navigate = useNavigate();
     const [name, setName] = useState("");
 
     const nameEvent = (e) => {
@@ -15,34 +17,54 @@ const CreateGroup = () => {
         if (name === '') {
             alert("Empty or Invalid Input");
         } else {
-            const nameObj = { name };
-            console.log("name obj :", nameObj);
-            // axios({
-            //     method: 'POST',
-            //     url: 'https://locahost:4000/create-chat', codeObj,
-            // }).then(res => {
 
-            //     if (res.message === "success") {
-            //         <Navigate to="/" />
-            //     }
+            //create private group chat api
+            const helper = async () => {
+                return await createPrivateGroup(name);
+            }
 
-            //     setName("");
+            helper()
+                .then(result => {
 
-            // }).catch(e => {
+                    setName("");
+                    navigate("/private-group-chat", {
+                        state: {
+                            private_group_chat: result
+                        },
+                    });
 
-            //     console.log("Error occured :", e);
+                })
+                .catch(error => {
 
-            //     setName("");
+                    if (error === 401 || error === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error === 406) {
+                        alert(error);
+                    } else {
+                        alert(error);
+                        navigate("/");
+                    }
 
-            // });
+                });
         }
 
     }
+
+    useEffect(() => {
+
+        if (!localStorage.getItem("access_token")) {
+            navigate("/");
+        }
+
+    }, []);
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
-                    <button onClick={(e) => e.preventDefault()}>back</button>
                     <br />
                     <h1>Enter A Name for Group</h1>
                     <br />
@@ -59,9 +81,12 @@ const CreateGroup = () => {
                         <button
                             className="createBtn"
                             type="submit"
-                            onClick={(e) => createChat(e)}>
-                            Join
+                            onClick={createChat}
+                        >
+                            Create
                         </button>
+                        <br />
+                        <br />
                     </form>
                 </div>
             </div>

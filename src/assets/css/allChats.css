@@ -1,0 +1,80 @@
+.main_Div {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: whitesmoke;
+    font-family: 'Roboto', sans-serif;
+    flex-direction: column;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+}
+
+.main_Div div {
+    width: 500px;
+    max-width: 90%;
+    background: #fff;
+}
+
+.all_chats {
+    overflow-y: auto;
+    height: 500px;
+}
+
+.brand {
+    padding: 20px;
+    background: #f1f1f1;
+    display: flex;
+    align-items: center;
+}
+
+.brand h1 {
+    text-transform: uppercase;
+    font-size: 20px;
+    color: #444;
+    margin-left: 10px;
+}
+
+.chat_dv {
+    margin: 10px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+}
+
+.unseen_Div {
+    position: absolute;
+    right: 8px;
+    top: 15px;
+    height: 20px;
+    width: 20px;
+}
+
+.unseen_Div p {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    border-radius: 100px;
+    text-align: center;
+    background-color: #8F8BE8;
+    color: #fff;
+}
+
+.chat_dv h4 {
+    color: #8F8BE8;
+}
+
+.new_convo {
+    font-style: italic;
+    font-weight: lighter;
+    color: #787986;
+}

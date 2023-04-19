@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../assets/css/login.css";
+import { logIn } from "../apis/user";
 
-const LogIn = () => {
+const Login = () => {
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
+    const navigate = useNavigate();
 
     const nameEvent = (e) => {
         setName(e.target.value);
     }
+
     const passwordEvent = (e) => {
         setPassword(e.target.value);
     }
@@ -19,40 +22,56 @@ const LogIn = () => {
         if (password === '' || name === '') {
             alert("Empty or Invalid Input");
         } else {
-            const credentials = { name, password };
-            console.log("User credentials :", credentials);
-            // axios({
-            //     method: 'POST',
-            //     url: 'https://locahost:4000/log-in', credentials,
-            // }).then(res => {
 
-            //     if (res.message === "success") {
-            //         <Navigate to="/" />
-            //     }
+            //create private group chat api
+            const helper = async () => {
+                return await logIn(name, password);
+            }
 
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
+            helper()
+                .then(res => {
 
-            // }).catch(e => {
+                    localStorage.setItem('access_token', res.headers.access_token);
+                    localStorage.setItem('name', res.data.user.name);
+                    localStorage.setItem("userId", res.data.user._id);
+                    //redirect to the dashboard
+                    navigate("/dash-board");
 
-            //     console.log("Error occured :", e);
+                })
+                .catch(error => {
 
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
+                    if (error === 400 || error === 406) {
+                        alert(error);
+                    } else {
+                        alert(error);
+                    }
 
-            // });
+                });
         }
+    }
+
+    const signUp = (e) => {
+
+        e.preventDefault();
+        navigate("/sign-up");
 
     }
+
+    useEffect(() => {
+        localStorage.getItem("access_token") ?
+            navigate("/dash-board") :
+            console.log("in log in");
+    }, []);
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
+
                     <br />
                     <h1> Log In</h1>
                     <br />
+
                     <form>
                         <input
                             type="text"
@@ -62,7 +81,10 @@ const LogIn = () => {
                             value={name}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <input
                             type="password"
                             name="password"
@@ -71,17 +93,31 @@ const LogIn = () => {
                             value={password}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <button
                             className="registerBtn"
                             type="submit"
-                            onClick={(e) => logInUser(e)}>
-                            Register
+                            onClick={(e) => logInUser(e)}
+                        >
+                            Login
                         </button>
-                        <button className="signUpBtn" onClick={(e)=>e.preventDefault()}>
+
+                        <br />
+                        <br />
+
+                        <button
+                            className="signUpBtn"
+                            onClick={(e) => signUp(e)}
+                        >
                             Sign Up
                         </button>
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                     </form>
 
                     <br />
@@ -92,4 +128,4 @@ const LogIn = () => {
     );
 }
 
-export default LogIn;
+export default Login;

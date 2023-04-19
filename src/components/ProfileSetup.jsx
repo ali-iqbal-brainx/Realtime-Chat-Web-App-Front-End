@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Link, Navigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { getUserInfo, updateUserInfo } from "../apis/user";
 
 const ProfileSetup = () => {
+    const navigate = useNavigate();
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -18,17 +19,40 @@ const ProfileSetup = () => {
     }
 
     useEffect(() => {
-        // axios({
-        //     method: 'GET',
-        //     url: 'https://localhost:4000/get-user',
-        //     params: { userId: "123" }
-        // }).then(res => {
-        //     setName(res.name);
-        //     setPassword("");
-        //     setConfirmPassword("");
-        // }).catch(e => {
-        //     console.log("Error occured :", e);
-        // });
+        if (!localStorage.getItem("access_token")) {
+            navigate("/");
+        } else {
+
+            //update backend
+            const helper = async () => {
+                return await getUserInfo();
+            }
+
+            helper()
+                .then(res => {
+
+                    setName(res.data.data.name);
+                    setPassword("");
+                    setConfirmPassword("");
+
+                })
+                .catch(error => {
+
+                    if (error === 401 || error === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error === 406) {
+                        alert(error);
+                    } else {
+                        alert(error);
+                        navigate("/dash-board");
+                    }
+
+                });
+        }
+
     }, []);
 
     const updateUser = (e) => {
@@ -39,38 +63,46 @@ const ProfileSetup = () => {
         } else if (password !== confirmPassword) {
             alert("Passowrd fields mismatch");
         } else {
-            const profileObj = { name, password };
-            console.log("Profile Object :", profileObj);
-            // axios({
-            //     method: 'POST',
-            //     url: 'https://locahost:4000/update-profile', profileObj,
-            // }).then(res => {
 
-            //     if (res.status === 200) {
-            //         <Navigate to="/dashboard" />
-            //     }
+            //update backend
+            const helper = async () => {
+                return await updateUserInfo(name, password);
+            }
 
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
+            helper()
+                .then(res => {
 
-            // }).catch(e => {
-            //     console.log("Error occured :", e);
-            //     setName("");
-            //     setPassword("");
-            //     setConfirmPassword("");
-            // })
+                    navigate(-1);
+
+                })
+                .catch(error => {
+
+                    if (error === 401 || error === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error === 406) {
+                        alert(error);
+                    } else {
+                        alert(error);
+                        navigate("/dash-board");
+                    }
+
+                });
         }
 
     }
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
-                <button>back</button>
+
                     <br />
                     <h1> Update Profile</h1>
                     <br />
+
                     <form>
                         <input
                             type="text"
@@ -80,7 +112,10 @@ const ProfileSetup = () => {
                             value={name}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <input
                             type="password"
                             name="password"
@@ -89,7 +124,10 @@ const ProfileSetup = () => {
                             value={password}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <input
                             type="password"
                             name="confirmPassword"
@@ -98,14 +136,21 @@ const ProfileSetup = () => {
                             value={confirmPassword}
 
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <button
                             className="updateBtn"
                             type="submit"
-                            onClick={(e) => updateUser(e)}>
+                            onClick={(e) => updateUser(e)}
+                        >
                             Update
                         </button>
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                     </form>
 
                     <br />

@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { joinPrivateGroup } from "../apis/private";
 
 const Verification = () => {
     const [code, setCode] = useState("");
+    const navigate = useNavigate();
 
     const codeEvent = (e) => {
         setCode(e.target.value);
@@ -15,37 +16,50 @@ const Verification = () => {
         if (code === '') {
             alert("Empty or Invalid Input");
         } else {
-            const codeObj = { code };
-            console.log("Code :", codeObj);
-            // axios({
-            //     method: 'POST',
-            //     url: 'https://locahost:4000/join-chat', codeObj,
-            // }).then(res => {
 
-            //     if (res.message === "success") {
-            //         <Navigate to="/" />
-            //     }
+            //update backend
+            const helper = async () => {
+                return await joinPrivateGroup(code);
+            }
 
-            //     setCode("");
+            helper()
+                .then(res => {
 
-            // }).catch(e => {
+                    navigate("/private-group-chat", {
+                        state: {
+                            private_group_chat: res.data.chat
+                        },
+                    });
 
-            //     console.log("Error occured :", e);
+                })
+                .catch(error => {
 
-            //     setCode("");
+                    if (error === 401 || error === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error === 406) {
+                        alert(error);
+                    } else {
+                        alert(error);
+                        navigate("/dash-board");
+                    }
 
-            // });
+                });
         }
 
     }
+
     return (
         <>
-            <div className="App">
+            <div className="log_in">
                 <div className="center_div">
-                    <button onClick={(e) => e.preventDefault()}>back</button>
+
                     <br />
                     <h1>Enter Chat Code Below</h1>
                     <br />
+
                     <form>
                         <input
                             type="text"
@@ -53,16 +67,21 @@ const Verification = () => {
                             placeholder="Enter Chat Code..."
                             onChange={codeEvent}
                             value={code}
-
                         />
-                        <br /><br />
+
+                        <br />
+                        <br />
+
                         <button
                             className="joinBtn"
                             type="submit"
-                            onClick={(e) => joinChat(e)}>
+                            onClick={joinChat}
+                        >
                             Join
                         </button>
+
                     </form>
+                    <br />
                 </div>
             </div>
         </>
