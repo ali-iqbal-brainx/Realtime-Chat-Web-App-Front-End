@@ -34,15 +34,15 @@ const Verification = () => {
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 

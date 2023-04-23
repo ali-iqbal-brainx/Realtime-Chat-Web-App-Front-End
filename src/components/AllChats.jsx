@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from "react-router-dom";
-import "../assets/css/allChats.css";
+import "../assets/css/allChats.css"
 import socketIOClient from "socket.io-client";
-
-const ENDPOINT = "http://localhost:4000";
+import { getAllChats } from '../apis/chats';
+import { getOneToOneChat } from '../apis/oneToOne';
+import { getPrivateChatData } from '../apis/private';
 
 const AllChats = () => {
 
@@ -24,113 +24,102 @@ const AllChats = () => {
 
     const privateGroup = (privateChatData) => {
 
-        axios({
-            headers: {
-                access_token: 'Bearer ' + localStorage.getItem("access_token")
-            },
-            method: 'GET',
-            url: `http://localhost:4000/api/v1/chat/get-private-chat-data/${privateChatData._id}/${true}`
-        }).then(res => {
+        // call API
+        const helper = async () => {
+            return await getPrivateChatData(privateChatData._id, true);
+        }
 
-            console.log("success");
-            console.log(res.data);
-            // clean the msg area
-            navigate("/private-group-chat", {
-                state: {
-                    private_group_chat: res.data.privateChat
-                },
+        helper()
+            .then(res => {
+
+                navigate("/private-group-chat", {
+                    state: {
+                        private_group_chat: res.data.privateChat
+                    }
+                });
+
+            })
+            .catch(e => {
+
+                if (e.response.request.status === 401 || e.response.request.status === 403) {
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("name");
+                    localStorage.removeItem("userId");
+                    navigate('/');
+                } else if (e.response.request.status === 406) {
+                    alert(e.response.data.error);
+                } else {
+                    alert(e.response.data.error);
+                    navigate("/dash-board");
+                }
+
             });
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            if (e?.response?.request?.status === 401 || e?.response?.request?.status === 403) {
-                alert(e.response.data.error);
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("name");
-                localStorage.removeItem("userId");
-                navigate('/');
-            }
-            if (e?.response?.request?.status === 406) {
-                alert(e.response.data.error);
-            }
-            if (e?.response?.request?.status === 400) {
-                alert(e.response.data.error);
-                navigate(-1);
-            } else {
-                alert("server error");
-            }
-
-        });
     }
 
     const oneToOneGroup = (oneToOneChat) => {
 
-        axios({
-            headers: {
-                access_token: 'Bearer ' + localStorage.getItem("access_token")
-            },
-            method: 'GET',
-            url: `http://localhost:4000/api/v1/chat/get-one-to-one-chat-data/${oneToOneChat._id}/${true}`
-        }).then(res => {
+        // call API
+        const helper = async () => {
+            return await getOneToOneChat(oneToOneChat._id, true);
+        }
 
-            console.log("success", res.data);
-            // clean the msg area
-            navigate("/one-to-one-chat", {
-                state: {
-                    one_to_one_chat: res.data.oneToOneChat
-                },
+        helper()
+            .then(res => {
+
+                navigate("/one-to-one-chat", {
+                    state: {
+                        one_to_one_chat: res.data.oneToOneChat
+                    }
+                });
+
+            })
+            .catch(error => {
+
+                if (error.response.request.status === 401 || error.response.request.status === 403) {
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("name");
+                    localStorage.removeItem("userId");
+                    navigate('/');
+                } else if (error.response.request.status === 406) {
+                    alert(error.response.data.error);
+                } else {
+                    alert(error.response.data.error);
+                    navigate("/dash-board");
+                }
+
             });
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            if (e?.response?.request?.status === 401 || e?.response?.request?.status === 403) {
-                alert(e.response.data.error);
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("name");
-                localStorage.removeItem("userId");
-                navigate('/');
-            }
-            if (e?.response?.request?.status === 406) {
-                alert(e.response.data.error);
-            }
-            if (e?.response?.request?.status === 400) {
-                alert(e.response.data.error);
-                navigate(-1);
-            } else {
-                alert("server error");
-            }
-
-        });
     }
 
     useLayoutEffect(() => {
 
         if (localStorage.getItem("access_token")) {
 
-            axios({
-                headers: {
-                    access_token: 'Bearer ' + localStorage.getItem("access_token")
-                },
-                method: 'GET',
-                url: 'http://localhost:4000/api/v1/chat/get-all-chats'
-            }).then(res => {
+            // call API
+            const helper = async () => {
+                return await getAllChats();
+            }
 
-                console.log("response of one to one:", res.data.oneToOneChats);
-                setOneToOneChats(res.data.oneToOneChats);
+            helper()
+                .then(res => {
 
-            }).catch(e => {
+                    setOneToOneChats(res.data.oneToOneChats);
 
-                console.log("Error occured :", e);
-                if (e?.response?.request?.status === 401 || e?.response?.request?.status === 403) {
-                    localStorage.removeItem("userId");
-                    localStorage.removeItem("name");
-                    localStorage.removeItem("access_token");
-                    navigate('/');
-                }
+                })
+                .catch(error => {
 
-            });
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error.response.data.error === 406) {
+                        alert(error.response.data.error);
+                    } else {
+                        alert(error.response.data.error);
+                        navigate("/dash-board");
+                    }
+
+                });
 
         } else {
             navigate("/");
@@ -195,7 +184,6 @@ const AllChats = () => {
 
                     }
 
-
                 }
 
                 //socket data from one to one chat
@@ -213,44 +201,46 @@ const AllChats = () => {
 
         if (localStorage.getItem("access_token")) {
 
-            const newSocket = socketIOClient(ENDPOINT);
+            const newSocket = socketIOClient(process.env.REACT_APP_END_POINT);
 
-            axios({
-                headers: {
-                    access_token: 'Bearer ' + localStorage.getItem("access_token")
-                },
-                method: 'GET',
-                url: 'http://localhost:4000/api/v1/chat/get-all-chats'
-            }).then(res => {
+            // call api 
+            const helper = async () => {
+                return await getAllChats();
+            }
 
-                console.log("response :", res.data);
+            helper()
+                .then(res => {
 
-                setPublicChat(res.data.publicChat);
-                setPrivateChats(res.data.privateChats);
-                setOneToOneChats(res.data.oneToOneChats);
-                setIsLoaded(true);
-                setSocket(newSocket);
+                    setPublicChat(res.data.publicChat);
+                    setPrivateChats(res.data.privateChats);
+                    setOneToOneChats(res.data.oneToOneChats);
+                    setIsLoaded(true);
+                    setSocket(newSocket);
 
-                //join room socket msg to all users in socket
-                newSocket.emit("join_room", "ALLCHATSGROUP");
-                //join room socket msg to add new user
-                newSocket.emit("join_room", "NEW_USER");
+                    //join room socket msg to all users in socket
+                    newSocket.emit("join_room", "ALLCHATSGROUP");
+                    //join room socket msg to add new user
+                    newSocket.emit("join_room", "NEW_USER");
 
-            }).catch(e => {
+                })
+                .catch(error => {
 
-                console.log("Error occured :", e);
-                if (e?.response?.request?.status === 401 || e?.response?.request?.status === 403) {
-                    localStorage.removeItem("userId");
-                    localStorage.removeItem("name");
-                    localStorage.removeItem("access_token");
-                    navigate('/');
-                }
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("name");
+                        localStorage.removeItem("userId");
+                        navigate('/');
+                    } else if (error.response.data.error === 406) {
+                        alert(error.response.data.error);
+                    } else {
+                        alert(error.response.data.error);
+                        navigate("/dash-board");
+                    }
 
-            });
+                });
 
             // CLEAN UP THE EFFECT
             return () => {
-                console.log("off");
                 if (newSocket) {
                     console.log("off");
                     newSocket.off('recieve_msg_all_chats');

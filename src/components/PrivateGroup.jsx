@@ -6,8 +6,6 @@ import "../assets/css/chat.css";
 import { seeMessage } from '../apis/chats';
 import { getPrivateChatData, leavePrivateGroup, deletePrivateGroup, postMessagePrivate } from '../apis/private';
 
-const ENDPOINT = "http://localhost:4000";
-
 const PrivateGroup = () => {
 
     const navigate = useNavigate();
@@ -50,15 +48,15 @@ const PrivateGroup = () => {
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 
@@ -86,15 +84,15 @@ const PrivateGroup = () => {
                 })
                 .catch((error) => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 
@@ -125,15 +123,15 @@ const PrivateGroup = () => {
                 })
                 .catch((error) => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 
@@ -160,16 +158,16 @@ const PrivateGroup = () => {
                     helper()
                         .catch(error => {
 
-                            if (error === 401 || error === 403) {
+                            if (error.response.request.status === 401 || error.response.request.status === 403) {
                                 localStorage.removeItem("access_token");
                                 localStorage.removeItem("name");
                                 localStorage.removeItem("userId");
                                 navigate('/');
-                            } else if (error === 406) {
-                                alert(error);
+                            } else if (error.response.request.status === 406) {
+                                alert(error.response.data.error);
                             } else {
-                                alert(error);
-                                navigate("/");
+                                alert(error.response.data.error);
+                                navigate("/dash-board");
                             }
 
                         });
@@ -189,7 +187,7 @@ const PrivateGroup = () => {
             navigate("/");
         } else {
 
-            const newSocket = socketIOClient(ENDPOINT);
+            const newSocket = socketIOClient(process.env.REACT_APP_END_POINT);
 
             //call api
             const helper = async () => {
@@ -221,15 +219,15 @@ const PrivateGroup = () => {
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 
@@ -300,7 +298,7 @@ const PrivateGroup = () => {
                     <div className='ldBtn'>
                         {
                             localStorage.getItem("userId") === adminId ?
-                                
+
                                 <button
                                     className="registerBtn"
                                     onClick={deleteGroup}

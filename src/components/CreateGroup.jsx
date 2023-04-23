@@ -24,27 +24,27 @@ const CreateGroup = () => {
             }
 
             helper()
-                .then(result => {
+                .then(res => {
 
                     setName("");
                     navigate("/private-group-chat", {
                         state: {
-                            private_group_chat: result
+                            private_group_chat: res.data.private_group_chat
                         },
                     });
 
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.data.error === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/");
                     }
 

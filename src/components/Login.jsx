@@ -38,12 +38,12 @@ const Login = () => {
                     navigate("/dash-board");
 
                 })
-                .catch(error => {
+                .catch(e => {
 
-                    if (error === 400 || error === 406) {
-                        alert(error);
+                    if (e.response.request.status === 400 || e.response.request.status === 406) {
+                        alert(e.response.data.error);
                     } else {
-                        alert(error);
+                        alert(e.response.data.error);
                     }
 
                 });

@@ -6,8 +6,6 @@ import "../assets/css/chat.css";
 import { postMessagePublic, getPublicChat } from '../apis/public';
 import { seeMessage } from '../apis/chats';
 
-const ENDPOINT = "http://localhost:4000";
-
 const Chat = () => {
 
     const navigate = useNavigate();
@@ -33,27 +31,27 @@ const Chat = () => {
             }
 
             helper()
-                .then(result => {
+                .then(res => {
 
-                    setMessages((prev) => [...prev, result]);
+                    setMessages((prev) => [...prev, res.data.chat]);
                     //send message to socket.io on server
-                    socket.emit(`send_message`, [result, roomId]);
+                    socket.emit(`send_message`, [res.data.chat, roomId]);
                     //send msg to all chats screen
-                    socket.emit(`msg_counter`, [result, roomId, "PUBLIC"]);
+                    socket.emit(`msg_counter`, [res.data.chat, roomId, "PUBLIC"]);
                     setMsg("");
 
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.data.error === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/");
                     }
 
@@ -77,15 +75,15 @@ const Chat = () => {
                     helper()
                         .catch(error => {
 
-                            if (error === 401 || error === 403) {
+                            if (error.response.request.status === 401 || error.response.request.status === 403) {
                                 localStorage.removeItem("access_token");
                                 localStorage.removeItem("name");
                                 localStorage.removeItem("userId");
                                 navigate('/');
-                            } else if (error === 406) {
-                                alert(error);
+                            } else if (error.response.data.error === 406) {
+                                alert(error.response.data.error);
                             } else {
-                                alert(error);
+                                alert(error.response.data.error);
                                 navigate("/");
                             }
 
@@ -104,44 +102,44 @@ const Chat = () => {
             navigate("/");
         } else {
 
-            const newSocket = socketIOClient(ENDPOINT);
+            const newSocket = socketIOClient(process.env.REACT_APP_END_POINT);
             //call api
             const helper = async () => {
                 return await getPublicChat(true)
             }
 
             helper()
-                .then(result => {
+                .then(res => {
                     setMsg("");
-                    setChatCode(result[0].chatCode);
-                    setName(result[0].name);
-                    if (result[0].messages?.length === 1) {
-                        if ('_id' in result[0].messages[0]) {
+                    setChatCode(res.data.publicChat[0].chatCode);
+                    setName(res.data.publicChat[0].name);
+                    if (res.data.publicChat[0].messages?.length === 1) {
+                        if ('_id' in res.data.publicChat[0].messages[0]) {
                             console.log("in")
-                            setMessages(result[0].messages);
+                            setMessages(res.data.publicChat[0].messages);
                         } else {
                             setMessages([]);
                         }
                     } else {
-                        setMessages(result[0].messages);
+                        setMessages(res.data.publicChat[0].messages);
                     }
-                    setRoomId(result[0]._id);
+                    setRoomId(res.data.publicChat[0]._id);
                     setSocket(newSocket);
 
                     //join room socket msg to all users in socket
-                    newSocket.emit("join_room", result[0]._id);
+                    newSocket.emit("join_room", res.data.publicChat[0]._id);
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.data.error === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/");
                     }
 

@@ -7,8 +7,6 @@ import { getOneToOneChat } from '../apis/oneToOne';
 import { seeMessage } from '../apis/chats';
 import { postMessageOneToOne } from '../apis/oneToOne';
 
-const ENDPOINT = "http://localhost:4000";
-
 const OneToOneGroup = () => {
 
     const navigate = useNavigate();
@@ -49,15 +47,15 @@ const OneToOneGroup = () => {
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
+                        alert(error.response.data.error);
                         navigate("/dash-board");
                     }
 
@@ -83,16 +81,16 @@ const OneToOneGroup = () => {
                     helper()
                         .catch(error => {
 
-                            if (error === 401 || error === 403) {
+                            if (error.response.request.status === 401 || error.response.request.status === 403) {
                                 localStorage.removeItem("access_token");
                                 localStorage.removeItem("name");
                                 localStorage.removeItem("userId");
                                 navigate('/');
-                            } else if (error === 406) {
-                                alert(error);
+                            } else if (error.response.request.status === 406) {
+                                alert(error.response.data.error);
                             } else {
-                                alert(error);
-                                navigate("/");
+                                alert(error.response.data.error);
+                                navigate("/dash-board");
                             }
 
                         });
@@ -113,7 +111,7 @@ const OneToOneGroup = () => {
             navigate("/");
         } else {
 
-            const newSocket = socketIOClient(ENDPOINT);
+            const newSocket = socketIOClient(process.env.REACT_APP_END_POINT);
 
             //call api
             const helper = async () => {
@@ -143,16 +141,16 @@ const OneToOneGroup = () => {
                 })
                 .catch(error => {
 
-                    if (error === 401 || error === 403) {
+                    if (error.response.request.status === 401 || error.response.request.status === 403) {
                         localStorage.removeItem("access_token");
                         localStorage.removeItem("name");
                         localStorage.removeItem("userId");
                         navigate('/');
-                    } else if (error === 406) {
-                        alert(error);
+                    } else if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     } else {
-                        alert(error);
-                        navigate("/");
+                        alert(error.response.data.error);
+                        navigate("/dash-board");
                     }
 
                 });

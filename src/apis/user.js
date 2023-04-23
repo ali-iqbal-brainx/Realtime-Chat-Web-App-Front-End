@@ -1,28 +1,15 @@
-import axios from "axios";
+import makeRequest from "./api";
 
 const logOutUser = async () => {
 
     return new Promise((resolve, reject) => {
-        axios({
-            headers: {
-                access_token: 'Bearer ' + localStorage.getItem("access_token")
-            },
-            method: 'PUT',
-            url: 'http://localhost:4000/api/v1/auth/sign-out',
-        }).then(res => {
-
-            console.log("success in log out :", res.data.message);
-            resolve(res.data.message);
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            reject(
-                e?.response?.request?.status ?
-                    e.response.request.status :
-                    "Something went wrong!"
-            );
-        });
+        makeRequest("PUT", null, `/api/v1/auth/sign-out`)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(error => {
+                reject(error);
+            });
     });
 
 }
@@ -30,27 +17,13 @@ const logOutUser = async () => {
 const logIn = async (name, password) => {
 
     return new Promise((resolve, reject) => {
-        axios({
-            method: 'POST',
-            url: 'http://localhost:4000/api/v1/auth/log-in',
-            data: {
-                name: name,
-                password: password
-            }
-        }).then(res => {
-
-            console.log("success in log in :", res.data.user);
-            resolve(res);
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            reject(
-                e?.response?.request?.status ?
-                    e.response.request.status :
-                    "Something went wrong!"
-            );
-        });
+        makeRequest("POST", { name: name, password: password }, `/api/v1/auth/log-in`)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(error => {
+                reject(error);
+            });
     });
 
 }
@@ -58,26 +31,13 @@ const logIn = async (name, password) => {
 const getUserInfo = async () => {
 
     return new Promise((resolve, reject) => {
-        axios({
-            headers: {
-                access_token: 'Bearer ' + localStorage.getItem("access_token")
-            },
-            method: 'GET',
-            url: 'http://localhost:4000/api/v1/user/get-user-data'
-        }).then(res => {
-
-            console.log("success in getting user info");
-            resolve(res);
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            reject(
-                e?.response?.request?.status ?
-                    e.response.request.status :
-                    "Something went wrong!"
-            );
-        });
+        makeRequest("GET", null, `/api/v1/user/get-user-data`)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(error => {
+                reject(error);
+            });
     });
 
 }
@@ -85,30 +45,13 @@ const getUserInfo = async () => {
 const updateUserInfo = async (name, password) => {
 
     return new Promise((resolve, reject) => {
-        axios({
-            headers: {
-                access_token: 'Bearer ' + localStorage.getItem("access_token")
-            },
-            method: 'PUT',
-            url: 'http://localhost:4000/api/v1/user/profile-setup',
-            data: {
-                name: name,
-                password: password
-            }
-        }).then(res => {
-
-            console.log("success in updating user info");
-            resolve(res);
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            reject(
-                e?.response?.request?.status ?
-                    e.response.request.status :
-                    "Something went wrong!"
-            );
-        });
+        makeRequest("PUT", { name: name, password: password }, `/api/v1/user/profile-setup`)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(error => {
+                reject(error);
+            });
     });
 
 }
@@ -116,27 +59,13 @@ const updateUserInfo = async (name, password) => {
 const signUp = async (name, password) => {
 
     return new Promise((resolve, reject) => {
-        axios({
-            method: 'POST',
-            url: 'http://localhost:4000/api/v1/auth/sign-up',
-            data: {
-                name: name,
-                password: password
-            }
-        }).then(res => {
-
-            console.log("success in sign up");
-            resolve(res);
-
-        }).catch(e => {
-
-            console.log("Error occured :", e);
-            reject(
-                e?.response?.request?.status ?
-                    e.response.request.status :
-                    "Something went wrong!"
-            );
-        });
+        makeRequest("POST", { name: name, password: password }, `/api/v1/auth/sign-up`)
+            .then(res => {
+                resolve(res);
+            })
+            .catch(error => {
+                reject(error);
+            });
     });
 
 }

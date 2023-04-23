@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import { signUp } from "../apis/user";
 
-const ENDPOINT = "http://localhost:4000";
-
 const SignUp = () => {
 
     const navigate = useNavigate();
@@ -47,8 +45,8 @@ const SignUp = () => {
                 })
                 .catch(error => {
 
-                    if (error === 406) {
-                        alert(error);
+                    if (error.response.request.status === 406) {
+                        alert(error.response.data.error);
                     }
 
                 });
@@ -58,7 +56,7 @@ const SignUp = () => {
 
     useEffect(() => {
 
-        const newSocket = socketIOClient(ENDPOINT);
+        const newSocket = socketIOClient(process.env.REACT_APP_END_POINT);
         setSocket(newSocket);
         //join room socket msg to all users in socket
         newSocket.emit("join_room", "NEW_USER");
