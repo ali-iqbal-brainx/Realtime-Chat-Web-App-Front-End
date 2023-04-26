@@ -39,7 +39,10 @@ const SignUp = () => {
                 .then(res => {
 
                     //send msg to all chats screen to add this new user
-                    socket.emit(`add_new_user`, true);
+                    if (socket && socket.connected) {
+                        console.log("new user added");
+                        socket.emit("add_new_user", true)
+                    }
                     navigate("/");
 
                 })
