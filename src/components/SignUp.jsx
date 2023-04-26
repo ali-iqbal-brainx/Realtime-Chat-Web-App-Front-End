@@ -40,7 +40,7 @@ const SignUp = () => {
 
                     //send msg to all chats screen to add this new user
                     if (socket && socket.connected) {
-                        console.log("new user added");
+                        console.log("new user add");
                         socket.emit("add_new_user", true)
                     }
                     navigate("/");
@@ -63,6 +63,10 @@ const SignUp = () => {
         setSocket(newSocket);
         //join room socket msg to all users in socket
         newSocket.emit("join_room", "NEW_USER");
+
+        newSocket.on("append_new_user", (data) => {
+            console.log("new user added :", data);
+        });
 
         // CLEAN UP THE EFFECT
         return () => {
