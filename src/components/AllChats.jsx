@@ -9,9 +9,7 @@ import { getPrivateChatData } from '../apis/private';
 const AllChats = () => {
 
     const navigate = useNavigate();
-    const [publicChat, setPublicChat] = useState([]);
-    const [privateChats, setPrivateChats] = useState([]);
-    const [oneToOneChats, setOneToOneChats] = useState([]);
+    const [allChats, setAllChats] = useState([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [chek, setCehk] = useState(false);
     const [socket, setSocket] = useState(null);
@@ -90,6 +88,18 @@ const AllChats = () => {
             });
     }
 
+    const redirectToChat = (chat) => {
+
+        if (chat?.adminId) {
+            privateGroup(chat);
+        } else if (chat?.names) {
+            oneToOneGroup(chat);
+        } else {
+            publicGroup(chat);
+        }
+
+    }
+
     useLayoutEffect(() => {
 
         if (localStorage.getItem("access_token")) {
@@ -102,7 +112,7 @@ const AllChats = () => {
             helper()
                 .then(res => {
 
-                    setOneToOneChats(res.data.oneToOneChats);
+                    setAllChats(res.data.allChats);
 
                 })
                 .catch(error => {
@@ -139,6 +149,7 @@ const AllChats = () => {
                 if (data) {
 
                     setCehk((prev) => !prev);
+
                 }
 
             });
@@ -148,13 +159,7 @@ const AllChats = () => {
                 //socket data from public chat
                 if (data[2] === "PUBLIC") {
 
-                    setPublicChat(
-                        publicChat.map((chat) => {
-                            const unseenCount = ++chat.unseenCount;
-                            chat.messages.push(data[0]);
-                            return { ...chat, unseenCount };
-                        })
-                    );
+                    setCehk((prev) => !prev);
 
                 }
 
@@ -163,22 +168,11 @@ const AllChats = () => {
 
                     const chatId = data[1];
                     //if private chat contains a chat with this chatId then set the state otherwise dont
-                    for (let i = 0; i < privateChats.length; i++) {
+                    for (let i = 0; i < allChats.length; i++) {
 
-                        if (privateChats[i]._id === chatId) {
+                        if (allChats[i]._id === chatId) {
 
-                            setPrivateChats(
-                                privateChats.map((chat) => {
-                                    if (chat._id === chatId) {
-                                        const unseenCount = ++chat.unseenCount;
-                                        chat.messages.push(data[0]);
-                                        return { ...chat, unseenCount };
-                                    } else {
-                                        return chat;
-                                    }
-
-                                })
-                            );
+                            setCehk((prev) => !prev);
 
                         }
 
@@ -211,9 +205,7 @@ const AllChats = () => {
             helper()
                 .then(res => {
 
-                    setPublicChat(res.data.publicChat);
-                    setPrivateChats(res.data.privateChats);
-                    setOneToOneChats(res.data.oneToOneChats);
+                    setAllChats(res.data.allChats);
                     setIsLoaded(true);
                     setSocket(newSocket);
 
@@ -266,10 +258,17 @@ const AllChats = () => {
                 <hr />
                 <div className='all_chats'>
 
-                    {isLoaded ? publicChat.map((chat) => {
+                    {isLoaded ? allChats.map((chat) => {
                         return (
-                            <div className='chat_dv' onClick={publicGroup} key={chat._id}>
-                                <h4>{chat.name}</h4>
+                            <div
+                                className='chat_dv' onClick={() => { redirectToChat(chat) }} key={chat._id}>
+                                {(() => {
+                                    if (chat.name) {
+                                        return (<h4>{chat.name}</h4>);
+                                    } else {
+                                        return (<h4>{chat.ids[0] === localStorage.getItem("userId") ? chat.names[1].name : chat.names[0].name}</h4>);
+                                    }
+                                })()}
                                 <span className='unseen_Div'><p>{chat.unseenCount ? chat.unseenCount : null}</p></span>
                                 {(() => {
                                     if (!chat.messages.length) {
@@ -296,73 +295,7 @@ const AllChats = () => {
                                 })()}
                             </div>
                         )
-                    }) : 'Loading Public Chat data...'}
-
-                    {isLoaded ? privateChats.map((privateChat) => {
-                        return (
-                            <div className='chat_dv' onClick={() => { privateGroup(privateChat) }} key={privateChat._id}>
-                                <h4>{privateChat.name}</h4>
-                                <span className='unseen_Div'><p>{privateChat.unseenCount ? privateChat.unseenCount : null}</p></span>
-                                {(() => {
-                                    if (!privateChat.messages.length) {
-                                        return (
-                                            <p className='new_convo'>Be first one to message...</p>
-                                        )
-                                    } else {
-                                        if (privateChat.messages[privateChat.messages.length - 1].userDetails._id === localStorage.getItem("userId")) {
-                                            return (
-                                                <p>
-                                                    <span style={{ fontWeight: 'bold' }}>You: </span>
-                                                    {privateChat.messages[privateChat.messages.length - 1].message}
-                                                </p>
-                                            )
-                                        } else {
-                                            return (
-                                                <p>
-                                                    <span style={{ fontWeight: 'bold' }}>{privateChat.messages[privateChat.messages.length - 1].userDetails.name}: </span>
-                                                    {privateChat.messages[privateChat.messages.length - 1].message}
-                                                </p>
-                                            )
-                                        }
-                                    }
-                                })()}
-
-                            </div>
-                        )
-                    }) : 'Loading Private Chats data...'}
-
-                    {isLoaded ? oneToOneChats.map((oneToOneChat) => {
-                        return (
-                            <div className='chat_dv' onClick={() => { oneToOneGroup(oneToOneChat) }} key={oneToOneChat._id}>
-                                <h4>{oneToOneChat.ids[0] === localStorage.getItem("userId") ? oneToOneChat.names[1].name : oneToOneChat.names[0].name}</h4>
-                                <span className='unseen_Div'><p>{oneToOneChat.unseenCount ? oneToOneChat.unseenCount : null}</p></span>
-                                {(() => {
-                                    if (!oneToOneChat.messages.length) {
-                                        return (
-                                            <p className='new_convo'>Be first one to message...</p>
-                                        )
-                                    } else {
-                                        if (oneToOneChat.messages[oneToOneChat.messages.length - 1].userDetails._id === localStorage.getItem("userId")) {
-                                            return (
-                                                <p>
-                                                    <span style={{ fontWeight: 'bold' }}>You: </span>
-                                                    {oneToOneChat.messages[oneToOneChat.messages.length - 1].message}
-                                                </p>
-                                            )
-                                        } else {
-                                            return (
-                                                <p>
-                                                    <span style={{ fontWeight: 'bold' }}>{oneToOneChat.messages[oneToOneChat.messages.length - 1].userDetails.name}: </span>
-                                                    {oneToOneChat.messages[oneToOneChat.messages.length - 1].message}
-                                                </p>
-                                            )
-                                        }
-                                    }
-                                })()}
-
-                            </div>
-                        )
-                    }) : 'Loading One to One Chats data...'}
+                    }) : 'Loading All Chats data...'}
 
                 </div>
 
