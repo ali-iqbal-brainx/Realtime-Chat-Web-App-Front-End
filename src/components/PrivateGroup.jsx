@@ -249,7 +249,7 @@ const PrivateGroup = () => {
 
     return (
         <>
-
+        
             <div className="chat_div">
                 <section className="chat__section">
                     <div className="brand">
@@ -277,8 +277,18 @@ const PrivateGroup = () => {
                                             "incoming"
                                     }
                                 >
-                                    <h4>{message.userDetails.name}</h4>
-                                    <p>{message.message}</p>
+                                    <h4>
+                                        {message.userDetails.name}
+                                    </h4>
+                                    <p>
+                                        {message.message}
+                                    </p>
+                                    <h6>
+                                        {(() => {
+                                            const date = new Date(message.createdAt);
+                                            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
+                                        })()}
+                                    </h6>
                                 </div>
                             )
                         })}
