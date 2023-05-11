@@ -6,6 +6,7 @@ import "../assets/css/chat.css";
 import { getOneToOneChat } from '../apis/oneToOne';
 import { seeMessage } from '../apis/chats';
 import { postMessageOneToOne } from '../apis/oneToOne';
+import { modifyTime } from '../utils/helperFunctions';
 
 const OneToOneGroup = () => {
 
@@ -37,11 +38,11 @@ const OneToOneGroup = () => {
             helper()
                 .then(res => {
 
-                    setMessages((prev) => [...prev, res.data.chat]);
+                    setMessages((prev) => [...prev, res.data.msg]);
                     //send message to socket.io on server
-                    socket.emit(`send_one_to_one_message`, [res.data.chat, groupId]);
+                    socket.emit(`send_one_to_one_message`, [res.data.msg, groupId]);
                     //send msg to all chats screen
-                    socket.emit(`msg_counter`, [res.data.chat, groupId, "ONE-TO-ONE"]);
+                    socket.emit(`msg_counter`, [res.data.msg, groupId, "ONE-TO-ONE"]);
                     setMsg("");
 
                 })
@@ -75,7 +76,7 @@ const OneToOneGroup = () => {
 
                     //update backend
                     const helper = async () => {
-                        return await seeMessage(data[1], data[0]._id, "ONE_TO_ONE");
+                        return await seeMessage(data[0]._id);
                     }
 
                     helper()
@@ -194,10 +195,7 @@ const OneToOneGroup = () => {
                                         {message.message}
                                     </p>
                                     <h6>
-                                        {(() => {
-                                            const date = new Date(message.createdAt);
-                                            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-                                        })()}
+                                        {modifyTime(message)}
                                     </h6>
                                 </div>
                             )

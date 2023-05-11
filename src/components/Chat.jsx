@@ -5,6 +5,7 @@ import ScrollToBottom from 'react-scroll-to-bottom';
 import "../assets/css/chat.css";
 import { postMessagePublic, getPublicChat } from '../apis/public';
 import { seeMessage } from '../apis/chats';
+import { modifyTime } from '../utils/helperFunctions';
 
 const Chat = () => {
 
@@ -33,11 +34,11 @@ const Chat = () => {
             helper()
                 .then(res => {
 
-                    setMessages((prev) => [...prev, res.data.chat]);
+                    setMessages((prev) => [...prev, res.data.msg]);
                     //send message to socket.io on server
-                    socket.emit(`send_message`, [res.data.chat, roomId]);
+                    socket.emit(`send_message`, [res.data.msg, roomId]);
                     //send msg to all chats screen
-                    socket.emit(`msg_counter`, [res.data.chat, roomId, "PUBLIC"]);
+                    socket.emit(`msg_counter`, [res.data.msg, roomId, "PUBLIC"]);
                     setMsg("");
 
                 })
@@ -69,7 +70,7 @@ const Chat = () => {
 
                     //update backend
                     const helper = async () => {
-                        return await seeMessage(data[1], data[0]._id, "PUBLIC");
+                        return await seeMessage(data[0]._id);
                     }
 
                     helper()
@@ -183,10 +184,7 @@ const Chat = () => {
                                         {message.message}
                                     </p>
                                     <h6>
-                                        {(() => {
-                                            const date = new Date(message.createdAt);
-                                            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-                                        })()}
+                                        {modifyTime(message)}
                                     </h6>
                                 </div>
                             )
