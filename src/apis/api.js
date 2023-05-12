@@ -20,9 +20,9 @@ const makeRequest = async (httpMethod, data = null, url) => {
 
             console.log("Error occured :", e);
             reject(e);
-            
+
         });
     });
 }
 
-export default makeRequest
+export default makeRequest;

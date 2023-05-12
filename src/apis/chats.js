@@ -1,9 +1,9 @@
 import makeRequest from "./api";
 
-const seeMessage = async (chatId, messageId, chatType) => {
+const seeMessage = async (messageId) => {
 
     return new Promise((resolve, reject) => {
-        makeRequest("POST", null, `/api/v1/chat/see-message/${chatId}/${messageId}/${chatType}`)
+        makeRequest("POST", null, `/api/v1/chat/see-message/${messageId}`)
             .then(res => {
                 resolve(res);
             })

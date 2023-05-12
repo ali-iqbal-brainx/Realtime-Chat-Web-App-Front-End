@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ScrollToBottom from 'react-scroll-to-bottom';
 import "../assets/css/chat.css";
 import { seeMessage } from '../apis/chats';
+import { modifyTime } from '../utils/helperFunctions';
 import { getPrivateChatData, leavePrivateGroup, deletePrivateGroup, postMessagePrivate } from '../apis/private';
 
 const PrivateGroup = () => {
@@ -38,11 +39,11 @@ const PrivateGroup = () => {
             helper()
                 .then(res => {
 
-                    setMessages((prev) => [...prev, res.data.chat]);
+                    setMessages((prev) => [...prev, res.data.msg]);
                     //send message to socket.io on server
-                    socket.emit(`send_private_message`, [res.data.chat, groupId]);
+                    socket.emit(`send_private_message`, [res.data.msg, groupId]);
                     //send msg to all chats screen
-                    socket.emit(`msg_counter`, [res.data.chat, groupId, "PRIVATE"]);
+                    socket.emit(`msg_counter`, [res.data.msg, groupId, "PRIVATE"]);
                     setMsg("");
 
                 })
@@ -152,7 +153,7 @@ const PrivateGroup = () => {
 
                     //update backend
                     const helper = async () => {
-                        return await seeMessage(data[1], data[0]._id, "PRIVATE");
+                        return await seeMessage(data[0]._id);
                     }
 
                     helper()
@@ -249,7 +250,7 @@ const PrivateGroup = () => {
 
     return (
         <>
-        
+
             <div className="chat_div">
                 <section className="chat__section">
                     <div className="brand">
@@ -284,10 +285,7 @@ const PrivateGroup = () => {
                                         {message.message}
                                     </p>
                                     <h6>
-                                        {(() => {
-                                            const date = new Date(message.createdAt);
-                                            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
-                                        })()}
+                                        {modifyTime(message)}
                                     </h6>
                                 </div>
                             )
